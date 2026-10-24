@@ -1,0 +1,56 @@
+name: iosroot
+on: workflow_dispatch
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 340
+    steps:
+      - uses: actions/checkout@v4
+      - name: free space
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android /opt/hostedtoolcache/CodeQL
+          sudo apt-get clean
+          df -h / /mnt
+      - name: deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y hfsprogs fuse3 libfuse3-dev libicu-dev zlib1g-dev libbz2-dev libattr1-dev cmake g++ git rsync python3-pip android-sdk-libsparse-utils jq
+          pip3 install --break-system-packages remotezip
+      - name: apfs-fuse
+        run: |
+          git clone --recursive https://github.com/sgan81/apfs-fuse /tmp/apfs-fuse
+          mkdir /tmp/apfs-fuse/build && cd /tmp/apfs-fuse/build
+          cmake .. -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_CXX_FLAGS="-include cstdint"
+          make -j4
+          sudo cp apfs-fuse /usr/local/bin/
+      - name: dmgs
+        run: |
+          sudo mkdir -p /mnt/w && sudo chown $USER /mnt/w
+          cd /mnt/w
+          URL=$(curl -s "https://api.ipsw.me/v4/device/iPhone10,3?type=ipsw" | jq -r '.firmwares[] | select(.buildid=="20H392") | .url' | head -1)
+          echo "$URL"
+          test -n "$URL"
+          remotezip "$URL" 087-86698-044.dmg 087-86593-047.dmg 087-86715-047.dmg
+          ls -lh
+      - name: root image
+        run: |
+          cd /mnt/w
+          sudo bash $GITHUB_WORKSPACE/tools/mkiosroot.sh 087-86698-044.dmg 087-86593-047.dmg 087-86715-047.dmg root.img 16G
+          sudo mkdir -p /mnt/iosroot
+          sudo mount -t hfsplus -o loop,force root.img /mnt/iosroot
+          sudo python3 $GITHUB_WORKSPACE/tools/sweet-root-tweaks.py /mnt/iosroot
+          sudo umount /mnt/iosroot
+          img2simg root.img root.simg
+          rm root.img
+          ls -lh
+      - name: publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cd /mnt/w
+          sha256sum root.simg > root.simg.sha256
+          split -b 1900M -d root.simg root.simg.part.
+          rm root.simg
+          gh release create iosroot-v1 --repo $GITHUB_REPOSITORY --title iosroot-v1 --notes "iOS root simg parts" root.simg.part.* root.simg.sha256
