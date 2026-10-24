@@ -27,14 +27,14 @@ MID_MEM_SIZE = int(__import__("os").environ.get("MIDSIZE", "0x1c0000000"), 16)
 SOC_BASE = 0x01000000
 
 # interrupt-controller@f200000 (redistributor-stride 0x20000, 8 cores)
-GICD, GICD_SIZE = 0x0f200000, 0x10000
-GICR, GICR_SIZE = 0x0f300000, 0x100000
+GICD, GICD_SIZE = 0x17a00000, 0x10000
+GICR, GICR_SIZE = 0x17a60000, 0x100000
 # cont_splash_region left lit by ABL
-FB, FB_SIZE = 0x5c000000, 0xf00000
+FB, FB_SIZE = 0xe1000000, 0xf00000
 SWEET_ECID = 0x544f50415a000001  # 'TOPAZ' + 1, synthetic
 FB_W, FB_H, FB_STRIDE = 1080, 2400, 1080 * 4
 # Internal UFS host (ufshc@4804000 "ufs_mem"); QEMU virt has none
-UFS, UFS_SIZE = 0x04804000, 0x3000
+UFS, UFS_SIZE = 0x01d84000, 0x3000
 TIMEBASE = 19200000
 VTIMER_INTID = 19
 # QEMU virt (-M virt,gic-version=3 -cpu cortex-a76): GICD/GICR and the generic timer's CNTFRQ

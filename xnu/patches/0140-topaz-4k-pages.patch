@@ -242,7 +242,7 @@ index 023086f..0ab2cad 100644
  #if defined(SWEET)
  	/* Stage 0: white 64x32 band, no stack or page tables needed. */
 +#if defined(TOPAZ_4K)
-+	MOV64	x0, (0x5c000000 + 2368 * 4320)	/* topaz splash framebuffer */
++	MOV64	x0, (0xe1000000 + 2368 * 4320)	/* topaz splash framebuffer */
 +#else
  	MOV64	x0, (0x9c000000 + 2368 * 4320)
 +#endif

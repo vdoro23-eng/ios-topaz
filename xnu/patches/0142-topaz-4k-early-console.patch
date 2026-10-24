@@ -46,7 +46,7 @@ index 34537cf..b926886 100644
 +		}
 +	}
 +	for (unsigned int i = 0; i < 6; i++) {
-+		l2[first + i] = (0x5c000000ULL + i * ARM_TT_L2_SIZE) | ARM_TTE_VALID | ARM_TTE_TYPE_BLOCK |
++		l2[first + i] = (0xe1000000ULL + i * ARM_TT_L2_SIZE) | ARM_TTE_VALID | ARM_TTE_TYPE_BLOCK |
 +		    ARM_TTE_BLOCK_SH(SH_OUTER_MEMORY) |
 +		    ARM_TTE_BLOCK_ATTRINDX(CACHE_ATTRINDX_WRITECOMB) |
 +		    ARM_TTE_BLOCK_AF | ARM_TTE_BLOCK_PNX | ARM_TTE_BLOCK_NX;
@@ -94,12 +94,12 @@ index 0ab2cad..9fd1cb9 100644
  
 +#if defined(SWEET) && defined(TOPAZ_4K)
 +	/*
-+	 * topaz splash framebuffer (0x5c000000, 1080x2400x4 = 10 MB) VA=PA as
++	 * topaz splash framebuffer (0xe1000000, 1080x2400x4 = 10 MB) VA=PA as
 +	 * Normal-NC: six 2 MB blocks in an L2 table of its own (L1 index 1;
 +	 * RAM is at 0x140000000), for the early screen console.
 +	 */
 +	add		x2, x2, PGBYTES
-+	MOV64	x10, 0x5c000000
++	MOV64	x10, 0xe1000000
 +	create_l1_table_entry x10, x1, x2, x11, x12, x13
 +	MOV64	x11, (ARM_TTE_TYPE_BLOCK | ARM_TTE_VALID | ARM_TTE_BLOCK_SH(SH_OUTER_MEMORY) | ARM_TTE_BLOCK_ATTRINDX(CACHE_ATTRINDX_WRITECOMB) | ARM_TTE_BLOCK_AF | ARM_TTE_BLOCK_PNX | ARM_TTE_BLOCK_NX)
 +	orr		x11, x11, x10
@@ -138,7 +138,7 @@ index 2adaa7f..9429767 100644
  #include <kern/misc_protos.h>
  
 +#if defined(TOPAZ_4K)
-+static volatile uint32_t *early_fb = (volatile uint32_t *)(uintptr_t)0x5c000000;  /* topaz splash */
++static volatile uint32_t *early_fb = (volatile uint32_t *)(uintptr_t)0xe1000000;  /* topaz splash */
 +#else
  static volatile uint32_t *early_fb = (volatile uint32_t *)(uintptr_t)0x9c000000;
 +#endif
